@@ -1,0 +1,36 @@
+package templates
+
+templ Home() {
+	<div class="container flex flex-col h-9/10 w-9/10 rounded-md overflow-hidden border-gray-300 border-solid border-1">
+		<div class="bg-stone-200 py-2 px-4 border-b-1 border-b-solid border-b-gray-300">
+			<span class="text-base">Add a task</span>
+		</div>
+		<form
+			hx-post="/todos"
+			hx-swap="none"
+			hx-on::after-request="document.querySelector('#refresh-todos').dispatchEvent(new Event('refresh-todos')); this.reset();"
+			class="flex flex-col justify-start p-4 gap-2"
+		>
+			<label for="new-todo" class="text-base">Item</label>
+			<input
+				type="text"
+				name="new-todo"
+				id="new-todo"
+				placeholder="What do you want to do?"
+				required
+				autocomplete="off"
+				class="border-solid border-1 border-gray-300 p-2.5 rounded-sm outline-0 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+			/>
+			<button
+				type="submit"
+				class="w-min px-6 py-2 text-base text-white bg-blue-500 rounded-sm hover:bg-blue-700 focus:bg-blue-800 hover:cursor-pointer"
+			>Add</button>
+		</form>
+	</div>
+	<div class="container flex flex-col h-9/10 w-9/10 rounded-md overflow-hidden border-gray-300 border-solid border-1">
+		<div class="bg-stone-200 py-2 px-4 border-b-1 border-b-solid border-b-gray-300">
+			<span class="text-base">Tasks</span>
+		</div>
+		<div id="refresh-todos" hx-get="/todos" hx-swap="innerHTML" hx-target="this" hx-trigger="load, refresh-todos"></div>
+	</div>
+}

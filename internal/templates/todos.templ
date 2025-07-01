@@ -1,0 +1,126 @@
+package templates
+
+import "todo/internal/db/queries"
+import "fmt"
+import "strconv"
+
+templ Todo_list(todos []db.Todo) {
+	<ul class="flex flex-col justify-start p-4 w-full gap-4">
+		for _, todo := range todos {
+			@todo_item(todo)
+		}
+	</ul>
+}
+
+templ todo_item(todo db.Todo) {
+	<li x-data="{edit: false}" class="flex gap-2 items-center">
+		<!-- Render If edit state is false button is pressed -->
+		<div x-show="!edit" class="flex gap-2 items-center size-full">
+			<span
+				hx-patch="/todos"
+				hx-swap="none"
+				hx-trigger="click"
+				hx-vals={ todo_request_params(todo) }
+				hx-on::after-request="document.querySelector('#refresh-todos').dispatchEvent(new Event('refresh-todos'))"
+				class={ span_styles(todo.Completed) }
+			>
+				{ todo.Value }
+			</span>
+			<button
+				@click="edit = !edit"
+				class="bg-blue-500 rounded-sm size-6 md:size-8 p-1 hover:bg-blue-700 focus:bg-blue-800 hover:cursor-pointer"
+			>
+				<svg
+					width="800px"
+					height="800px"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					class="size-full"
+				>
+					<g id="Edit / Edit_Pencil_01">
+						<path
+							id="Vector"
+							d="M12 8.00012L4 16.0001V20.0001L8 20.0001L16 12.0001M12 8.00012L14.8686 5.13146L14.8704 5.12976C15.2652 4.73488 15.463 4.53709 15.691 4.46301C15.8919 4.39775 16.1082 4.39775 16.3091 4.46301C16.5369 4.53704 16.7345 4.7346 17.1288 5.12892L18.8686 6.86872C19.2646 7.26474 19.4627 7.46284 19.5369 7.69117C19.6022 7.89201 19.6021 8.10835 19.5369 8.3092C19.4628 8.53736 19.265 8.73516 18.8695 9.13061L18.8686 9.13146L16 12.0001M12 8.00012L16 12.0001"
+							stroke="#ffffff"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						></path>
+					</g>
+				</svg>
+			</button>
+			<button
+				hx-delete="/todos"
+				hx-swap="none"
+				hx-trigger="click"
+				hx-vals={ todo_request_params(todo) }
+				hx-on::after-request="document.querySelector('#refresh-todos').dispatchEvent(new Event('refresh-todos'))"
+				class="bg-red-500 rounded-sm size-6 md:size-8 p-1 hover:bg-red-700 focus:bg-red-800 hover:cursor-pointer"
+			>
+				<svg
+					width="800px"
+					height="800px"
+					viewBox="0 0 24 24"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+					class="size-full"
+				>
+					<path d="M4 7H20" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+					<path
+						d="M6 7V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V7"
+						stroke="#ffffff"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					></path>
+					<path
+						d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z"
+						stroke="#ffffff"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					></path>
+				</svg>
+			</button>
+		</div>
+		<!-- Render If edit state is true -->
+		<form
+			hx-put="/todos"
+			hx-swap="none"
+			hx-on::after-request="document.querySelector('#refresh-todos').dispatchEvent(new Event('refresh-todos'))"
+			x-show="edit"
+			class="size-full flex gap-2 items-center flex-wrap md:flex-nowrap"
+		>
+			<input
+				type="text"
+				name="value"
+				required
+				autocomplete="off"
+				placeholder="What do you want to do?"
+				class="w-full border-solid border-1 border-gray-300 p-2.5 rounded-sm outline-0 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+			/>
+			<input type="hidden" name="id" value={ todo.ID.String() }/>
+			<input type="hidden" name="completed" value={ strconv.FormatBool(todo.Completed) }/> <button
+	class="w-min px-6 py-2 text-base text-white bg-blue-500 rounded-sm hover:bg-blue-700 focus:bg-blue-800 hover:cursor-pointer"
+>Submit</button>
+			<button
+				type="button"
+				@click="edit = !edit"
+				class="w-min px-6 py-2 text-base text-white bg-red-500 rounded-sm hover:bg-red-700 focus:bg-red-800 hover:cursor-pointer"
+			>Cancel</button>
+		</form>
+	</li>
+}
+
+func span_styles(isTrue bool) string {
+	if isTrue {
+		return "text-base w-full cursor-pointer line-through text-gray-400"
+	}
+	return "text-base w-full cursor-pointer"
+}
+
+func todo_request_params(todo db.Todo) string {
+	return fmt.Sprintf(`{"id": "%s", "value": "%s", "completed": "%s"}`, todo.ID.String(), todo.Value,
+		strconv.FormatBool(todo.Completed))
+}
