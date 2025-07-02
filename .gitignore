@@ -1,2 +1,4 @@
-./internal/templates/*.go
-./tailwindcss
+tailwindcss
+*_templ.go
+queries/
+tmp/
