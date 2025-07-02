@@ -1,4 +1,5 @@
 tailwindcss
 *_templ.go
+style.min.css
 queries/
 tmp/
